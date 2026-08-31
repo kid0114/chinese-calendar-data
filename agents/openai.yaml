@@ -1,0 +1,3 @@
+interface:
+  display_name: "ChineseCalendarData"
+  short_description: "Call ytliu0 ChineseCalendar data as JSON"
