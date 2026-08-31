@@ -1,5 +1,7 @@
 # chinese-calendar-data
 
+中文说明见 [README.zh.md](README.zh.md)
+
 An agent skill (Pi / Codex) that queries [Yuk Tung Liu's ChineseCalendar](https://ytliu0.github.io/ChineseCalendar/index_simp.html) data as structured JSON — lunar dates, sexagenary (干支) pillars, solar terms, moon phases, 八字, and 星宿 lookup tables.
 
 The website is a static GitHub Pages app with no HTTP API. This skill downloads the official `index_c.js` engine (caching it locally), runs it in a Node VM, and normalizes the output to JSON.
