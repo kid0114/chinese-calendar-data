@@ -39,6 +39,21 @@ The helper downloads and caches the official JavaScript under `~/.cache/chinese-
 
 `data/known_dates.md` 存已查证的名人生日/历史日期。用户问名人生日时**先查该表**; 新查到的日期用本 skill 排好(农历/干支/星宿)后追加进表, 注明来源。单一来源标 ⚠, 双源核实改 ✓。
 
+### 查证来源优先级
+
+新日期查证时按以下顺序找来源, 尽量多源交叉确认:
+
+1. **维基百科** (第一优先): 最可靠且机器可读 — `curl https://zh.wikipedia.org/api/rest_v1/page/summary/<人物>` 或 `action=parse&prop=wikitext` 取 infobox 的 `birth_date`; 英文维基 `en.wikipedia.org` 同理。注意区分农历/公历标注, 维基默认公历。
+2. **Google 搜索** (第二优先): 搜 `<人物> 生日` / `<人物> birth date` 交叉确认, 结果里的百科/媒体条目可作第二来源。
+3. **百度百科** (第三优先): 搜 `<人物> 生日` 或直接 `baike.baidu.com`, 常带农历生日与出生地细节, 但需警惕营销号内容。
+4. **其他**: 官方传记/官网、权威媒体 (新华社/Reuters/Bloomberg)、福布斯等人物页。
+
+规则:
+- 至少查 2 个独立来源; 日期不一致时**不写入档案**, 在回复中列出分歧并说明
+- 同一出版集团/同一原始通稿的转载不算独立来源
+- 来源只有一条时 `核实` 列标 ⚠, 双源一致改 ✓
+- 时辰一律不存(名人时辰几乎不可考)
+
 ## Output Notes
 
 The normalized JSON keeps the original numeric fields where they matter:
