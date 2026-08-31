@@ -43,7 +43,7 @@ The helper downloads and caches the official JavaScript under `~/.cache/chinese-
 
 新日期查证时按以下顺序找来源, 尽量多源交叉确认:
 
-1. **维基百科** (第一优先): 最可靠且机器可读 — `curl https://zh.wikipedia.org/api/rest_v1/page/summary/<人物>` 或 `action=parse&prop=wikitext` 取 infobox 的 `birth_date`; 英文维基 `en.wikipedia.org` 同理。注意区分农历/公历标注, 维基默认公历。
+1. **维基百科** (第一优先, 不限语言): 最可靠且机器可读 — 按人物母语/主要活动语言选语言版, 中文人物先试 `zh.wikipedia.org`, 国际人物/英文名先试 `en.wikipedia.org`, 其他语言版 (ja/de/fr/ko 等) 同理; 某语言版无条目就换另一语言版。取结构化数据: `curl https://<lang>.wikipedia.org/api/rest_v1/page/summary/<人物>` 或 `action=parse&prop=wikitext` 取 infobox 的 `birth_date`。注意区分农历/公历标注, 维基默认公历。
 2. **Google 搜索** (第二优先): 搜 `<人物> 生日` / `<人物> birth date` 交叉确认, 结果里的百科/媒体条目可作第二来源。
 3. **百度百科** (第三优先): 搜 `<人物> 生日` 或直接 `baike.baidu.com`, 常带农历生日与出生地细节, 但需警惕营销号内容。
 4. **其他**: 官方传记/官网、权威媒体 (新华社/Reuters/Bloomberg)、福布斯等人物页。
