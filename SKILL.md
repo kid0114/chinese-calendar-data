@@ -11,11 +11,12 @@ The site is a static GitHub Pages application. It does not expose a JSON HTTP AP
 
 ## Use The Helper
 
-Prefer the helper script instead of scraping rendered HTML:
+Prefer the helper script instead of scraping rendered HTML. The script lives at `scripts/chinese_calendar_data.mjs` **relative to this skill's directory** (where this SKILL.md is). Resolve it against wherever the skill is installed, e.g. `~/.pi/agent/skills/chinese-calendar-data/` for Pi, `~/.codex/skills/chinese-calendar-data/` for Codex, or a git checkout such as `~/repos/chinese-calendar-data/`:
 
 ```bash
-node ~/.codex/skills/chinese-calendar-data/scripts/chinese_calendar_data.mjs --year 2024
-node ~/.codex/skills/chinese-calendar-data/scripts/chinese_calendar_data.mjs --date 2024-02-10
+SKILL_DIR=<path to this skill directory>
+node "$SKILL_DIR/scripts/chinese_calendar_data.mjs" --year 2024
+node "$SKILL_DIR/scripts/chinese_calendar_data.mjs" --date 2024-02-10
 ```
 
 Useful options:
