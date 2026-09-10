@@ -38,7 +38,7 @@ Options:
   --three-readings             Add 春节派/立春派/公元取模 three year-boundary readings (requires --date)
   --warn-uncertain             Add warning if the year/month is in the engine's known-uncertain list (requires --date)
   --bazi                       Add 八字四柱 (年/月/日柱, 节气定月柱; requires --date)
-  --xingxiu                    Add 星宿两套民俗硬表: 农历月日表(27宿) + 值日表(星期+日支, 28宿)
+  --xingxiu                    Add 星宿两套民俗硬表: 本命星宿(农历月日表, 27宿) + 值日星宿(星期+日支, 28宿); 本命在前
   --time <H:MM>                With --bazi, also add 时柱 (五鼠遁, 民用时近似)
   --source-url <url>           Override source JS URL
   --cache <path>               Override cache path
@@ -517,8 +517,10 @@ function threeReadings(ctx, year, data, date) {
   for (let i = 0; i < data.cmonthDate.length - 1; i++) {
     if (ordinal >= data.cmonthDate[i] && ordinal < data.cmonthDate[i + 1]) { cmIdx = i; break; }
   }
+  // cmonthYear 是本公历年内两个农历年的索引(0=跨年延续的旧年, 1=本年内春节起的新年),
+  // 不是相对公历年的偏移: 农历年 = year - 1 + cmonthYear[cmIdx] (已验证 1900-2100 取值仅 0/1).
   const yearOffset = data.cmonthYear[cmIdx];
-  const chun = ganzhiForYear(year + yearOffset);
+  const chun = ganzhiForYear(year - 1 + yearOffset);
 
   // 立春派: 立春时刻为界. 引擎时刻为真太阳时, 民用时约再加 16~30 分钟 (均时差).
   const jdNoon = data.jd0 + ordinal + 1;
@@ -585,18 +587,21 @@ function xingxiuFor(ctx, lang, data, date) {
   const dailyXing = xx.daily.table[weekday][g];
 
   return {
+    // 本命星宿: 按出生日农历月+日查表, 一般放在值日星宿之前
     lunar_month_day_xingxiu: {
+      label: "本命星宿",
       xingxiu: lunarXing,
       basis: `农历${lunar.leap ? "闰" : ""}${lunar.month_name}${lunar.day_name}`,
       note: lunar.leap ? "闰月按同月序查" : undefined,
       system: xx.lunar.system,
     },
     daily_zhiri_xingxiu: {
+      label: "值日星宿",
       xingxiu: dailyXing,
       basis: `${xx.daily.weekdays[weekday]}, ${day.earthly_branch}日`,
       system: xx.daily.system,
     },
-    warning: "民俗查表法, 两套体系结果不同属正常; 与天文星宿位置无关",
+    warning: "民俗查表法, 本命星宿(农历月日表)在前、值日星宿(星期+日支表)在后; 两套体系结果不同属正常; 与天文星宿位置无关",
   };
 }
 const TERMS_FLAGGED = [[2051, 3], [2083, 2], [2084, 3], [2114, 11], [2142, 9], [2155, 10], [2157, 12], [2183, 3], [2186, 2]];

@@ -31,7 +31,7 @@ Useful options:
 - `--three-readings`: add 春节派/立春派/公元取模 three year-boundary readings (requires `--date`). Shows `disagree_chun_vs_li` when 春节派 and 立春派 give different 生肖.
 - `--warn-uncertain`: add warning if the year/month is in the engine's known-uncertain list (requires `--date`). The engine author flags years where 朔气时刻接近北京午夜 and dates may differ by one day: 2057, 2089, 2097, 2115, 2116, 2133, 2165, 2172.
 - `--bazi`: add 八字四柱 (requires `--date`). 年柱按立春, 月柱按节气(五虎遁), 日柱取自引擎. `--time <H:MM>` additionally gives 时柱(五鼠遁, 民用时近似, 未做经度/均时差修正).
-- `--xingxiu`: add 星宿两套民俗硬表 (requires `--date`). `lunar_month_day_xingxiu` = 农历月+日查表(27宿循环, 无牛宿; 闰月按同月序), `daily_zhiri_xingxiu` = 星期+日支查表(28宿全日循环). 两表为不同民俗体系, 结果不同属正常; 与天文星宿位置无关. 数据在 `data/xingxiu_lunar.json` / `data/xingxiu_daily.json` (用户供图转录, 已过结构自检).
+- `--xingxiu`: add 星宿两套民俗硬表 (requires `--date`). `lunar_month_day_xingxiu` = **本命星宿**(农历月+日查表, 27宿循环, 无牛宿; 闰月按同月序), `daily_zhiri_xingxiu` = **值日星宿**(星期+日支查表, 28宿全日循环). 输出顺序: 本命在前、值日在后. 两表为不同民俗体系, 结果不同属正常; 与天文星宿位置无关. 数据在 `data/xingxiu_lunar.json` / `data/xingxiu_daily.json` (用户供图转录, 已过结构自检).
 
 The helper downloads and caches the official JavaScript under `~/.cache/chinese-calendar-data/index_c.js`, then evaluates it in a Node VM and calls `langConstant()` and `calDataYear()`. It keeps the source URL in the JSON metadata so downstream code can attribute the result.
 
@@ -49,12 +49,15 @@ The helper downloads and caches the official JavaScript under `~/.cache/chinese-
 4. **其他**: 官方传记/官网、权威媒体 (新华社/Reuters/Bloomberg)、福布斯等人物页。
 
 规则:
+- 本地模型会话里若无法直接联网(无 bash 网络、搜索 MCP 不可用或结果不合适), 把查证任务交给外部模型 CLI: `~/.kimi-code/bin/kimi -p "<人物+待核日期+已知分歧, 要结论+来源>"`(已验证能溯源引用链), 或 `~/.grok/bin/grok -p "..."`; 结果当作二手证据处理
 - 至少查 2 个独立来源; 日期不一致时**不写入档案**, 在回复中列出分歧并说明
 - 同一出版集团/同一原始通稿的转载不算独立来源
 - 来源只有一条时 `核实` 列标 ⚠, 双源一致改 ✓
 - 时辰一律不存(名人时辰几乎不可考)
 
 ## Output Notes
+
+星宿一律用 `--xingxiu` 直接带日期取结果, **不要**自己写 python 读 `data/xingxiu_*.json` 或手推星期/日支。脚本里的星期换算(`weekday = (jd0 + ordinal + 2) % 7`, 0=星期天)与日支分组已跟引擎对齐; 手推易错(实测过: 把星期四误当星期三, 值日星宿跟着错)。
 
 The normalized JSON keeps the original numeric fields where they matter:
 
