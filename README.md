@@ -6,7 +6,7 @@
 
 An accurate Chinese calendar is two things stacked together: astronomy (new moons and solar terms computed to the minute) and history (the six ancient calendars of pre-Qin China, parallel calendars of rival dynasties, the 1582 Gregorian reform). Reimplementing either is a near-guaranteed way to be wrong. [Yuk Tung Liu's ChineseCalendar](https://ytliu0.github.io/ChineseCalendar/index_simp.html) has already done both — it just ships as a static web page with no API.
 
-This skill does exactly one thing: **lifts the official engine `index_c.js` out of the page and runs it as a library**.
+The calendar helper does exactly one thing: **lifts the official engine `index_c.js` out of the page and runs it as a library**. A separate offline group-analysis helper summarizes already-calculated records without changing or reimplementing the calendar engine.
 
 ```
 official index_c.js ──download & cache──> Node VM sandbox ──normalize──> JSON
@@ -37,6 +37,59 @@ node "$SKILL_DIR/scripts/chinese_calendar_data.mjs" --date 1946-09-25 --bazi --x
 
 Table data lives in `data/xingxiu_lunar.json` / `data/xingxiu_daily.json` (transcribed from supplied charts, structurally self-checked). **Always query via `--xingxiu`** — never read the JSON or compute weekdays by hand; the weekday mapping and branch grouping are aligned with the engine, and manual derivation has been observed to go wrong in practice.
 
+## Group analysis: native mansions and Day Masters
+
+`group._analysis.mjs` generates **three separate statistical tables per population**: native-mansion triplets, the ten Day Masters, and the five Day Master elements. Runs offline with Node.js 18+ and no npm dependencies.
+
+```bash
+# Run from this checkout, or set SKILL_DIR to your installed skill directory:
+SKILL_DIR=.
+DATA=/path/to/local/groups.json
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA"                    # groups kept separate
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --group example    # one group
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --list
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --format json
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --output /tmp/group-statistics.md
+node --test "$SKILL_DIR/scripts/group._analysis.test.mjs"
+```
+
+- **Counts, exact ratios, percentages:** every category is included, even zero-count categories. Each population uses its own validated denominator, not a hardcoded 16. Percentages use two decimals; rounded rows may not sum to exactly 100%.
+- **Native mansions only:** the 27-mansion cycle forms nine triplets spaced nine apart. Same mansion = 命; different mansions in the same triplet = 业胎. Traditional mansion names are normalized. Duty mansions are not used.
+- **Day Master elements:** count one day stem per person, not weighted whole-chart `wuxing_counts`.
+- **Validation:** missing/contradictory fields or duplicate members within one population fail explicitly. People serving in separate administrations count once in each cohort; populations are never pooled automatically. The input dataset is never modified.
+- **Input/output:** Markdown to stdout by default; `--format json` exposes structured counts and ratios for later presentation work. Use `--input FILE` for another dataset or `--output FILE` to save a report.
+
+### Local data stays local
+
+**No local research datasets, member records, or generated statistics are distributed.** Both `data/known_dates.md` and `data/cabinets_by_administration.json` are Git-ignored. Supply your own local JSON with `--input`; the default path is only a local convenience and is not bundled. Tests use synthetic members created in memory or temporary files, never local research records.
+
+The helper only aggregates stored fields; it does not research birthdays, verify roster dates, or recompute charts. Keep population-selection dates/bases explicit when comparing groups. Folk relationship labels are grouping conventions, not causal claims.
+
+### Input format (synthetic example)
+
+Custom JSON can use `groups` instead of `administrations`:
+
+```json
+{
+  "groups": [{
+    "id": "example",
+    "label": "Example population",
+    "members": [{
+      "name": "Example member",
+      "mansions": { "benming_native": "角" },
+      "day_master_stem": "甲",
+      "day_master_element": "木"
+    }]
+  }]
+}
+```
+
+```bash
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input my-groups.json --group example
+```
+
+Optional `member_count`, cached `mansions.yetai_group`, `day_master`, and `day_pillar` fields are checked for consistency when present. See `--help` for all CLI options.
+
 ## Install
 
 ```bash
@@ -52,7 +105,9 @@ The engine downloads on first run and caches at `~/.cache/chinese-calendar-data/
 ```
 SKILL.md                           # instructions for the agent (verification workflow, source priority)
 agents/openai.yaml                 # interface metadata
-scripts/chinese_calendar_data.mjs  # the helper
+scripts/chinese_calendar_data.mjs  # the calendar helper
+scripts/group._analysis.mjs       # offline group statistics (Markdown / JSON)
+scripts/group._analysis.test.mjs  # regression, validation, and CLI tests
 data/xingxiu_lunar.json            # 27-mansion lunar month+day table (folk)
 data/xingxiu_daily.json            # 28-mansion weekday+branch table (folk)
 data/known_dates.md                # local verification archive (a cache that grows with use; not published)

@@ -55,6 +55,27 @@ The helper downloads and caches the official JavaScript under `~/.cache/chinese-
 - 来源只有一条时 `核实` 列标 ⚠, 双源一致改 ✓
 - 时辰一律不存(名人时辰几乎不可考)
 
+## Group Analysis / Statistical Tables
+
+Use `scripts/group._analysis.mjs` for repeatable group statistics instead of creating temporary grouping scripts. It aggregates **stored calculated fields** offline; it does not research birthdays, verify cabinet rosters, or compute charts.
+
+```bash
+DATA=/path/to/local/groups.json
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA"                    # groups kept separate
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --group example
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --list
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --format json
+node "$SKILL_DIR/scripts/group._analysis.mjs" --input "$DATA" --output /tmp/group-statistics.md
+node --test "$SKILL_DIR/scripts/group._analysis.test.mjs"
+```
+
+- **Do not publish local data.** Both `data/known_dates.md` and `data/cabinets_by_administration.json` are local-only and Git-ignored. No real member records or derived research statistics belong in examples or tests; use synthetic fixtures only. Default input is the local-only cabinet file, resolved relative to the script. Supply `--input FILE` with either an `administrations` or `groups` root array; no dataset is bundled.
+- Each group has an `id`, optional `label`/`member_count`, and non-empty `members`. Each member needs `name_en` (or `name`), `mansions.benming_native`, `day_master_stem`, and `day_master_element`. Optional cached triplets, `day_master`, and `day_pillar` must agree.
+- Output contains separate native-mansion triplet, ten Day Master, and five Day Master element tables. Include zero-count categories, exact ratios, and two-decimal percentages. Denominators come from each validated population, not a fixed 16; missing or contradictory fields and within-group duplicates are errors.
+- Only `benming_native` enters the 27-mansion triplets; normalize traditional/simplified mansion names. Same mansion = 命; different mansions within a triplet = 业胎. **Never apply these triplets to duty mansions.** Day Master elements count people by their day stem, not weighted whole-chart elements.
+- Keep populations separate. A person serving under different administrations counts once in each cohort. Preserve selection dates/bases: initial officeholders, year-end rosters, and current snapshots are different sampling rules. Re-verify officeholding dates before historical/current claims; generating tables does not verify the source data.
+- `data/known_dates.md` remains a local, Git-ignored archive; it is not required to generate these statistical tables. Folk group labels are not causal claims.
+
 ## Output Notes
 
 星宿一律用 `--xingxiu` 直接带日期取结果, **不要**自己写 python 读 `data/xingxiu_*.json` 或手推星期/日支。脚本里的星期换算(`weekday = (jd0 + ordinal + 2) % 7`, 0=星期天)与日支分组已跟引擎对齐; 手推易错(实测过: 把星期四误当星期三, 值日星宿跟着错)。
